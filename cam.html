@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lector QR y Código de Barras</title>
+<link rel="stylesheet" href="style.css">
+		<style>
+		body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f0f0f0;
+}
+
+h1 {
+    text-align: center;
+}
+
+.camara-container, .tabla-container {
+    margin: 20px auto;
+    text-align: center;
+}
+
+table {
+    width: 80%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+
+th {
+    background: #333;
+    color: #fff;
+}
+
+input, button {
+    margin: 5px;
+    padding: 5px;
+}
+		</style>
+</head>
+<body>
+
+<h1>Lector de Códigos</h1>
+
+<div class="camara-container">
+    <video id="camara" width="300" height="200" autoplay></video>
+    <input type="text" id="codigoInput" placeholder="Escanea un código">
+    <button id="buscarBtn">Buscar</button>
+</div>
+
+<div class="tabla-container">
+    <table id="inventarioTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Datos cargados dinámicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Librerías -->
+<script src="libs/jsQR.js"></script>
+<script src="libs/quagga.min.js"></script>
+<script src="script.js"></script>
+		<script>
+		let inventario = [
+    {id: "12345", nombre: "Producto A", cantidad: 10, precio: 50},
+    {id: "67890", nombre: "Producto B", cantidad: 5, precio: 30},
+];
+
+// Renderiza la tabla
+function renderTable() {
+    const tbody = document.querySelector('#inventarioTable tbody');
+    tbody.innerHTML = '';
+    inventario.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.id}</td>
+            <td contenteditable="true">${item.nombre}</td>
+            <td contenteditable="true">${item.cantidad}</td>
+            <td contenteditable="true">${item.precio}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+renderTable();
+
+// Buscar producto
+document.getElementById('buscarBtn').addEventListener('click', () => {
+    const code = document.getElementById('codigoInput').value.trim();
+    const encontrado = inventario.find(item => item.id == code || item.nombre.toLowerCase() == code.toLowerCase());
+    if (encontrado) {
+        alert(`Producto: ${encontrado.nombre}\nCantidad: ${encontrado.cantidad}\nPrecio: ${encontrado.precio}`);
+    } else {
+        alert('Producto no encontrado');
+    }
+});
+
+// Cámara y QR
+async function activarCamaraQR() {
+    const video = document.getElementById('camara');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    video.addEventListener('play', () => {
+        const loop = () => {
+            if (video.paused || video.ended) return;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code) document.getElementById('codigoInput').value = code.data;
+            requestAnimationFrame(loop);
+        };
+        loop();
+    });
+}
+
+// Cámara y código de barras (QuaggaJS)
+Quagga.init({
+    inputStream : {
+        name : "Live",
+        type : "LiveStream",
+        target: document.querySelector('#camara'),
+        constraints: { facingMode: "environment" }
+    },
+    decoder : {
+        readers : ["code_128_reader","ean_reader","ean_8_reader","upc_reader","upc_e_reader"]
+    }
+}, function(err) {
+    if (err) { console.error(err); return; }
+    Quagga.start();
+});
+
+// Cuando detecta un código de barras
+Quagga.onDetected(function(result) {
+    if(result && result.codeResult && result.codeResult.code){
+        document.getElementById('codigoInput').value = result.codeResult.code;
+    }
+});
+
+activarCamaraQR();
+		</script>
+		
+		<script>
+		// Datos iniciales (JSON o Excel)
+let inventario = [];
+
+// Cargar inventario desde JSON
+async function cargarJSON() {
+    const res = await fetch('data/inventario.json');
+    inventario = await res.json();
+    renderTable();
+}
+
+// Renderizar tabla
+function renderTable() {
+    const tbody = document.querySelector('#inventarioTable tbody');
+    tbody.innerHTML = '';
+    inventario.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.id}</td>
+            <td contenteditable="true">${item.nombre}</td>
+            <td contenteditable="true">${item.cantidad}</td>
+            <td contenteditable="true">${item.precio}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Buscar producto
+document.getElementById('buscarBtn').addEventListener('click', () => {
+    const code = document.getElementById('codigoInput').value.trim();
+    const encontrado = inventario.find(item => item.id == code || item.nombre.toLowerCase() == code.toLowerCase());
+    if (encontrado) {
+        alert(`Producto: ${encontrado.nombre}\nCantidad: ${encontrado.cantidad}\nPrecio: ${encontrado.precio}`);
+    } else {
+        alert('Producto no encontrado');
+    }
+});
+
+// Activar cámara y lectura QR / código de barras
+async function activarCamara() {
+    const video = document.getElementById('camara');
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    video.addEventListener('play', () => {
+        const loop = () => {
+            if (video.paused || video.ended) return;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            if (code) document.getElementById('codigoInput').value = code.data;
+            requestAnimationFrame(loop);
+        };
+        loop();
+    });
+}
+
+// Importar Excel
+function importarExcel(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+        inventario = json;
+        renderTable();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// Inicializar
+cargarJSON();
+activarCamara();
+
+// Ejemplo de cómo agregar un input file para Excel en HTML
+// <input type="file" id="excelInput" />
+document.getElementById('excelInput')?.addEventListener('change', e => importarExcel(e.target.files[0]));
+		</script>
+
+</body>
+</html>
