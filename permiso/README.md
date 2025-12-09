@@ -1,0 +1,35 @@
+
+
+Licencia temporal formal para venta de alcohol
+
+
+tiendita-verduleria, calle bugambilias, paso de cortés.
+Tlaxcala, Tlax. 8 de diciembre 2025.
+
+
+
+Productos:
+--- caribe cooler 300ml .........$300.⁰⁰.
+
+
+
+
+
+# Tiendita y verdulería, und hbt  Paso de Cortés, calle Bugambilias, 90030, TLAXCALA, TLAX.
+
+
+
+# Terminos y condiciones legales;
+
+- Sólo venta de alcohol, para llevar.
+- No hay descorche dentro del establecimiento.
+- No venta de alcohol a menores de edad.
+- No beber productos con alcohol dentro ni fuera en propiedad del establecimiento.
+---
+
+
+
+
+https://github.com/ozclef/tienda-pass-cortes/blob/eaea3f646173c3e343e2c76a87d255c645faed67/permiso/LICENSE
+
+validado por programador, full-stack repositorios, derecho especialidad en software.
