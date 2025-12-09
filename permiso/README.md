@@ -32,4 +32,7 @@ Productos:
 
 https://github.com/ozclef/tienda-pass-cortes/blob/eaea3f646173c3e343e2c76a87d255c645faed67/permiso/LICENSE
 
+
+https://pass-cortes-shop.vercel.app/permiso/README.md
+
 validado por programador, full-stack repositorios, derecho especialidad en software.
